@@ -1,0 +1,12 @@
+# Python y herramientas
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Datos personales: no se suben al repositorio
+.env
+*.db
+*.xlsx
+review.csv
+.openlibrary_cache.json

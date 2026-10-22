@@ -1,0 +1,7 @@
+/* Estilos provisionales; en el hito 2 se sustituyen por Pico.css. */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0 auto;
+  max-width: 60rem;
+  padding: 1rem;
+}
