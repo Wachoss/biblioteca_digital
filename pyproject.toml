@@ -1,0 +1,37 @@
+[project]
+name = "biblioteca-digital"
+version = "0.1.0"
+description = "Catálogo personal de libros: FastAPI, SQLite y una PWA con Jinja2 + HTMX"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "fastapi>=0.160.0",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "openpyxl>=3.1.5",
+    "pydantic-settings>=2.16.1",
+    "rapidfuzz>=3.14.6",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+# E/F: errores de pycodestyle y pyflakes; I: orden de imports; UP: sintaxis moderna;
+# B: bugs habituales (bugbear); SIM: simplificaciones.
+select = ["E", "F", "I", "UP", "B", "SIM"]
