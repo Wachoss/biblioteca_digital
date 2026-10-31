@@ -13,7 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import LoginRequired, login_url
 from app.config import get_settings
-from app.routers import api, auth, manage, pages
+from app.routers import api, auth, manage, pages, pwa
 from app.templating import templates
 
 settings = get_settings()
@@ -40,6 +40,7 @@ app.include_router(manage.router)
 app.include_router(pages.router)
 app.include_router(auth.router)
 app.include_router(api.router)
+app.include_router(pwa.router)
 
 
 @app.exception_handler(LoginRequired)

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sin conexión · Biblioteca Digital{% endblock %}
+{% block content %}
+{#
+  La guarda el service worker al instalarse y la enseña cuando no hay red y tampoco una
+  copia de la página pedida. Es la misma para todos, así que no depende de la sesión.
+#}
+<h1>Sin conexión</h1>
+<p>No hay conexión a Internet y esta página no está guardada en el dispositivo.</p>
+<p>
+  Se pueden consultar sin conexión el catálogo y las fichas de los libros que ya hayas
+  abierto antes en este dispositivo. Añadir, editar o borrar necesita conexión.
+</p>
+<p><a href="{{ url_for('catalog_page') }}" role="button">Ir al catálogo</a></p>
+{% endblock %}
