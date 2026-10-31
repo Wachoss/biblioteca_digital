@@ -7,11 +7,14 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.1",
+    "argon2-cffi>=25.1.0",
     "fastapi>=0.160.0",
     "httpx>=0.28.1",
+    "itsdangerous>=2.2.0",
     "jinja2>=3.1.6",
     "openpyxl>=3.1.5",
     "pydantic-settings>=2.16.1",
+    "python-multipart>=0.0.32",
     "rapidfuzz>=3.14.6",
     "sqlalchemy>=2.0,<3",
     "uvicorn[standard]>=0.54.0",

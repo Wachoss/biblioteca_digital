@@ -18,5 +18,15 @@
   <main class="container">
     {% block content %}{% endblock %}
   </main>
+  <footer class="container site-footer">
+    {% if is_owner(request) %}
+    <form method="post" action="{{ url_for('logout') }}">
+      <small>Has iniciado sesión.</small>
+      <button type="submit" class="outline secondary">Salir</button>
+    </form>
+    {% elif request.url.path != url_for('login_page').path %}
+    <small><a href="{{ url_for('login_page') }}?next={{ request.url.path | urlencode }}">Entrar</a></small>
+    {% endif %}
+  </footer>
 </body>
 </html>
