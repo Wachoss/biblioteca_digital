@@ -5,22 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>{% block title %}Biblioteca Digital{% endblock %}</title>
+  {# PWA: el manifest dice cómo se instala; theme-color colorea la barra del navegador
+     del mismo tono que el fondo de Pico.css, claro u oscuro. #}
+  <link rel="manifest" href="{{ url_for('manifest').path }}">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#13171f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="{{ url_for('favicon').path }}" sizes="48x48">
+  <link rel="icon" href="{{ url_for('static', path='icons/icon-192.png') }}" type="image/png" sizes="192x192">
+  {# iOS ignora los iconos del manifest al añadir a la pantalla de inicio. #}
+  <link rel="apple-touch-icon" href="{{ url_for('static', path='icons/apple-touch-icon.png') }}">
+  <meta name="apple-mobile-web-app-title" content="Biblioteca">
   <link rel="stylesheet" href="{{ url_for('static', path='vendor/pico-2.1.1.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
   <script src="{{ url_for('static', path='vendor/htmx-2.0.11.min.js') }}" defer></script>
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
 </head>
 <body>
   <header class="container">
     <nav>
       <ul><li><a href="{{ url_for('catalog_page') }}" class="brand">Biblioteca Digital</a></li></ul>
-      {% if is_owner(request) %}
+      {% if is_owner(request) and not offline %}
       <ul class="header-actions"><li><a href="{{ url_for('new_book_page') }}" role="button">Añadir libro</a></li></ul>
       {% endif %}
     </nav>
+    <p class="offline-notice" role="status">
+      Sin conexión: puede que lo que ves no esté al día, y añadir o editar no funcionará.
+    </p>
   </header>
   <main class="container">
     {% block content %}{% endblock %}
   </main>
+  {% if not offline %}
   <footer class="container site-footer">
     {% if is_owner(request) %}
     <form method="post" action="{{ url_for('logout') }}">
@@ -31,5 +46,6 @@
     <small><a href="{{ url_for('login_page') }}?next={{ request.url.path | urlencode }}">Entrar</a></small>
     {% endif %}
   </footer>
+  {% endif %}
 </body>
 </html>
