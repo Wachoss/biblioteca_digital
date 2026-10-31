@@ -1,5 +1,7 @@
 from collections.abc import Iterator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -25,3 +27,6 @@ def get_session() -> Iterator[Session]:
     """Dependencia de FastAPI: una sesión por petición, cerrada al terminar."""
     with SessionLocal() as session:
         yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]

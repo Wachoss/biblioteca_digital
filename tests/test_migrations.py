@@ -31,3 +31,18 @@ def test_downgrade_and_upgrade_again(tmp_path):
     command.upgrade(config, "head")
     command.downgrade(config, "base")
     command.upgrade(config, "head")
+
+
+def test_search_text_backfill(tmp_path):
+    """La migración rellena search_text de los libros que ya estaban en la base de datos."""
+    url = f"sqlite:///{tmp_path / 'test.db'}"
+    config = alembic_config(url)
+    command.upgrade(config, "1668674c7fed")  # esquema anterior a search_text
+    with create_engine(url).begin() as conn:
+        conn.exec_driver_sql("INSERT INTO books (id, title, status) VALUES (1, 'Ética', 'leido')")
+        conn.exec_driver_sql("INSERT INTO authors (id, name) VALUES (1, 'Fernando Savater')")
+        conn.exec_driver_sql("INSERT INTO book_authors VALUES (1, 1)")
+    command.upgrade(config, "head")
+    with create_engine(url).connect() as conn:
+        text = conn.exec_driver_sql("SELECT search_text FROM books").scalar_one()
+    assert text == "etica fernando savater"

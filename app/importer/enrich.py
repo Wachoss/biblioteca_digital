@@ -8,7 +8,8 @@ from pathlib import Path
 import httpx
 from rapidfuzz import fuzz
 
-from app.importer.normalize import RawBook, fold
+from app.importer.normalize import RawBook
+from app.text import fold
 
 SEARCH_URL = "https://openlibrary.org/search.json"
 COVER_URL = "https://covers.openlibrary.org/b/id/{}-M.jpg"

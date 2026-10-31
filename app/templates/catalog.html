@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+{#
+  Un formulario GET normal: sin JavaScript funciona igual (recarga la página entera).
+  Con HTMX, cada cambio pide solo el trozo de resultados y lo sustituye en #resultados;
+  hx-push-url actualiza la URL para que se pueda compartir y volver atrás, y hx-sync
+  cancela la petición anterior si se sigue escribiendo.
+#}
+<form aria-label="Buscar en el catálogo" action="{{ url_for('catalog_page') }}" method="get"
+      hx-get="{{ url_for('catalog_page') }}" hx-target="#resultados" hx-push-url="true"
+      hx-trigger="input delay:300ms, submit" hx-sync="this:replace">
+  <fieldset role="group">
+    <input type="search" name="q" value="{{ q }}" placeholder="Buscar por título o autor"
+           aria-label="Buscar por título o autor" autocomplete="off">
+    <button type="submit">Buscar</button>
+  </fieldset>
+
+  <fieldset class="status-filter">
+    <legend class="visually-hidden">Filtrar por estado</legend>
+    <label><input type="radio" name="status" value=""
+           {% if not selected %}checked{% endif %}> Todos ({{ counts.values() | sum }})</label>
+    {% for status in STATUSES %}
+    <label><input type="radio" name="status" value="{{ status.value }}"
+           {% if selected == status %}checked{% endif %}> {{ status.label }} ({{ counts[status] }})</label>
+    {% endfor %}
+  </fieldset>
+</form>
+
+<section id="resultados" aria-live="polite">
+  {% include "_results.html" %}
+</section>
+{% endblock %}

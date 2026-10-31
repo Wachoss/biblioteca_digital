@@ -1,0 +1,24 @@
+{# Trozo que HTMX sustituye al buscar o filtrar. También lo incluye catalog.html. #}
+<p class="result-count">
+  {{ books | length }} {{ "libro" if books | length == 1 else "libros" }}
+  {%- if q %} para «{{ q }}»{% endif %}
+  {%- if selected %} con estado «{{ selected.label }}»{% endif %}
+</p>
+
+{% if books %}
+<ul class="book-grid">
+  {% for book in books %}
+  <li>
+    <a href="{{ url_for('book_page', book_id=book.id) }}" class="book-card">
+      {# loading="lazy": el navegador solo descarga las portadas que van a verse. #}
+      {% with url=book.cover_url, title=book.title, loading="lazy" %}{% include "_cover.html" %}{% endwith %}
+      <strong>{{ book.title }}</strong>
+      {% if book.authors %}<small>{{ book.authors | map(attribute="name") | join(", ") }}</small>{% endif %}
+      <mark class="status status-{{ book.status.value }}">{{ book.status.label }}</mark>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No hay ningún libro que coincida.</p>
+{% endif %}

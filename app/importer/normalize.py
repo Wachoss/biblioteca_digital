@@ -1,13 +1,12 @@
 """Fase 1: leer el Excel y normalizarlo. Sin red ni base de datos: funciones puras."""
 
-import re
-import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from openpyxl import load_workbook
 
 from app.models import ReadingStatus
+from app.text import clean, fold
 
 # Claves sin tildes, en minúsculas y sin espacios sobrantes (ver `fold`).
 STATUS_MAP = {
@@ -32,19 +31,6 @@ class RawBook:
     authors: list[str] = field(default_factory=list)
     status: ReadingStatus = ReadingStatus.PENDING
     notes: str | None = None
-
-
-def clean(text: str | None) -> str:
-    """Normaliza Unicode (NFC) y colapsa espacios."""
-    if text is None:
-        return ""
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", str(text))).strip()
-
-
-def fold(text: str | None) -> str:
-    """Versión para comparar: sin tildes, en minúsculas."""
-    decomposed = unicodedata.normalize("NFD", clean(text).lower())
-    return "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
 
 
 def parse_status(value: str | None) -> ReadingStatus:

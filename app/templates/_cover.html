@@ -1,0 +1,9 @@
+{#
+  Portada con plan B: el título va siempre debajo y la imagen encima. Si el libro no
+  tiene portada, o Open Library no responde, se ve el título. Sin JavaScript.
+  alt="" porque el título ya está escrito al lado; un lector de pantalla lo diría dos veces.
+#}
+<div class="cover">
+  <span class="cover-title" aria-hidden="true">{{ title }}</span>
+  {% if url %}<img src="{{ url }}" alt="" loading="{{ loading }}">{% endif %}
+</div>
