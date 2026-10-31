@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} · Biblioteca Digital{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('catalog_page') }}">← Volver al catálogo</a></p>
+<article class="book-detail">
+  {% with url=book.cover_url | cover_size("L"), title=book.title, loading="eager" %}{% include "_cover.html" %}{% endwith %}
+  <div>
+    <hgroup>
+      <h1>{{ book.title }}</h1>
+      <p>{{ book.authors | map(attribute="name") | join(", ") or "Autor desconocido" }}</p>
+    </hgroup>
+    <p><mark class="status status-{{ book.status.value }}">{{ book.status.label }}</mark></p>
+    <dl>
+      {% if book.publish_year %}<dt>Año</dt><dd>{{ book.publish_year }}</dd>{% endif %}
+      {% if book.isbn13 %}<dt>ISBN</dt><dd>{{ book.isbn13 }}</dd>{% endif %}
+      {% if book.notes %}<dt>Notas</dt><dd>{{ book.notes }}</dd>{% endif %}
+    </dl>
+    {% if book.openlibrary_key %}
+    <p><a href="https://openlibrary.org{{ book.openlibrary_key }}" rel="noopener">Ver en Open Library</a></p>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}

@@ -3,9 +3,9 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.importer.normalize import fold
 from app.importer.review import ReviewedBook
 from app.models import Author, Book
+from app.text import fold
 
 
 def get_or_create_author(session: Session, name: str, cache: dict[str, Author]) -> Author:

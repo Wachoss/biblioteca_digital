@@ -10,8 +10,9 @@ from pathlib import Path
 from rapidfuzz import fuzz
 
 from app.importer.enrich import AUTO_ACCEPT_SCORE, Candidate
-from app.importer.normalize import RawBook, clean, fix_name_case, fold, parse_authors, parse_status
+from app.importer.normalize import RawBook, fix_name_case, parse_authors, parse_status
 from app.models import ReadingStatus
+from app.text import clean, fold
 
 AUTHOR_SEP = " / "
 LOADED = [
