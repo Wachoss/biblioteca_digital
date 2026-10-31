@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Entrar · Biblioteca Digital{% endblock %}
+{% block content %}
+<article class="login">
+  <h1>Entrar</h1>
+  {% if not enabled %}
+  <p>El inicio de sesión no está configurado. Genera la contraseña con
+    <code>uv run python -m app.auth</code> y pega el resultado en el <code>.env</code>.</p>
+  {% else %}
+  <p>Solo para el dueño de la biblioteca. Para consultar el catálogo no hace falta.</p>
+  <form method="post" action="{{ url_for('login') }}">
+    <input type="hidden" name="next" value="{{ next }}">
+    {# El campo de usuario oculto ayuda a los gestores de contraseñas a guardarla. #}
+    <input type="text" name="username" value="dueño" autocomplete="username" hidden>
+    <label>
+      Contraseña
+      <input type="password" name="password" autocomplete="current-password" required autofocus
+             {% if error %}aria-invalid="true" aria-describedby="login-error"{% endif %}>
+    </label>
+    {% if error %}<small id="login-error">{{ error }}</small>{% endif %}
+    <button type="submit">Entrar</button>
+  </form>
+  {% endif %}
+</article>
+{% endblock %}

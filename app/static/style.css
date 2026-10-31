@@ -101,3 +101,23 @@
     max-width: 14rem;
   }
 }
+
+/* Pie con "Entrar" / "Salir": discreto, porque casi todos los visitantes solo leen. */
+.site-footer form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+}
+
+.site-footer button {
+  width: auto;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.login {
+  max-width: 24rem;
+  margin-inline: auto;
+}

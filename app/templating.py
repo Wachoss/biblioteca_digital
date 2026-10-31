@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
 
+from app.auth import is_owner
 from app.models import ReadingStatus
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -16,3 +17,4 @@ def cover_size(url: str | None, size: str) -> str | None:
 
 templates.env.filters["cover_size"] = cover_size
 templates.env.globals["STATUSES"] = list(ReadingStatus)
+templates.env.globals["is_owner"] = is_owner
