@@ -13,7 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import LoginRequired, login_url
 from app.config import get_settings
-from app.routers import api, auth, pages
+from app.routers import api, auth, manage, pages
 from app.templating import templates
 
 settings = get_settings()
@@ -35,6 +35,8 @@ app.add_middleware(
     https_only=settings.session_https_only,
 )
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+# manage va antes que pages: si no, /libros/nuevo casaría con /libros/{book_id}.
+app.include_router(manage.router)
 app.include_router(pages.router)
 app.include_router(auth.router)
 app.include_router(api.router)

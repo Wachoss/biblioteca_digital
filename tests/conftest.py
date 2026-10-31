@@ -4,9 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from app import auth
 from app.db import get_session
 from app.main import app
 from app.models import Author, Base, Book, ReadingStatus
+from tests.helpers import PASSWORD_HASH, log_in
 
 
 @pytest.fixture
@@ -50,3 +52,19 @@ def client(engine, session):
     app.dependency_overrides[get_session] = override
     yield TestClient(app)
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def owner_configured(monkeypatch):
+    monkeypatch.setenv("BIBLIOTECA_OWNER_PASSWORD_HASH", PASSWORD_HASH)
+    auth.get_settings.cache_clear()
+    auth.throttle.reset()
+    yield
+    auth.get_settings.cache_clear()
+
+
+@pytest.fixture
+def owner(client, owner_configured):
+    """Un cliente con la sesión del dueño iniciada."""
+    assert log_in(client).status_code == 303
+    return client

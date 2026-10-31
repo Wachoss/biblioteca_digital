@@ -5,11 +5,12 @@ Catálogo personal de libros: añadir libros por ISBN con datos de
 o autor y llevar el estado de lectura. Funciona en el ordenador y en el móvil como
 aplicación web instalable (PWA).
 
-**Estado:** hito 3 de 5. El catálogo se puede consultar: listado con portadas, ficha de
-cada libro, búsqueda por título o autor (sin importar tildes ni mayúsculas) y filtro por
-estado de lectura. También hay una API JSON de solo lectura en `/api/books`. El dueño
-puede iniciar sesión en `/entrar`; las rutas para añadir, editar y borrar llegan en el
-hito 4 y ya tienen preparada la protección.
+**Estado:** hito 4 de 5. El catálogo se puede consultar sin cuenta: listado con portadas,
+ficha de cada libro, búsqueda por título o autor (sin importar tildes ni mayúsculas) y
+filtro por estado de lectura. También hay una API JSON de solo lectura en `/api/books`.
+El dueño inicia sesión en `/entrar` y puede añadir libros por ISBN (los datos llegan de
+Open Library y se revisan antes de guardar) o a mano, editarlos y borrarlos. Falta el
+hito 5: convertirla en una PWA instalable.
 
 ## Tecnologías
 
@@ -54,13 +55,17 @@ app/
 ├── db.py            # motor y sesión de SQLAlchemy
 ├── models.py        # Book, Author, ReadingStatus
 ├── text.py          # clean() y fold(): normalizar y quitar tildes
+├── isbn.py          # validar ISBN (dígito de control) y pasar de 10 a 13 cifras
 ├── schemas.py       # qué devuelve la API JSON (Pydantic)
 ├── routers/
 │   ├── pages.py     # páginas HTML (Jinja2 + HTMX)
 │   ├── auth.py      # /entrar y /salir
+│   ├── manage.py    # añadir, editar y borrar (solo el dueño)
 │   └── api.py       # API JSON
 ├── services/
-│   └── catalog.py   # búsqueda, filtro y recuentos: la lógica, sin HTTP
+│   ├── catalog.py   # búsqueda, filtro y recuentos: la lógica, sin HTTP
+│   ├── books.py     # validar el formulario, crear, editar y borrar
+│   └── openlibrary.py  # buscar un libro por ISBN en Open Library
 ├── templates/       # plantillas Jinja2 (las que empiezan por _ son trozos)
 ├── static/          # CSS, HTMX y Pico.css; más adelante, el manifest de la PWA
 └── importer/        # importación del Excel antiguo (CLI)
@@ -102,3 +107,7 @@ las páginas, la API JSON y los tests. La documentación interactiva de la API e
 ## Licencia
 
 [MIT](LICENSE)
+| Buscar por ISBN rellena el formulario; guardar es otro paso | Guardar directamente lo que diga Open Library | Open Library a veces trae el título en otro idioma o mezcla traductores con autores; así se revisa antes. Si no conoce el ISBN o no responde, el mismo formulario sirve para darlo de alta a mano. |
+| ISBN validado con su dígito de control y guardado siempre como ISBN-13 | Guardarlo tal cual se escribe | Detecta erratas sin gastar una petición, y el mismo libro no puede entrar dos veces con el ISBN-10 y el ISBN-13. |
+| Escrituras con formularios HTML y POST, protegidas en el router entero | `PUT`/`DELETE` desde HTMX o una API JSON de escritura | Funciona sin JavaScript, SameSite=Lax ya protege los POST contra CSRF, y una ruta nueva no puede quedarse sin protección por olvido. |
+| Confirmar el borrado con un `<details>` | `confirm()` de JavaScript o una página de confirmación | No necesita JavaScript ni una página más, y evita borrar de un toque sin querer en el móvil. |
