@@ -1,4 +1,4 @@
-"""Punto de entrada: `uv run fastapi dev app/main.py`."""
+"""Punto de entrada: `uv run uvicorn app.main:app --reload`."""
 
 import logging
 import secrets

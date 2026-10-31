@@ -32,7 +32,7 @@ uv sync                          # crea .venv e instala las versiones exactas de
 cp .env.example .env             # ajustes locales
 uv run python -m app.auth        # elige tu contraseña y pega en .env lo que imprime
 uv run alembic upgrade head      # crea o actualiza la base de datos
-uv run fastapi dev app/main.py   # http://127.0.0.1:8000
+uv run uvicorn app.main:app --reload   # http://127.0.0.1:8000
 ```
 
 Para comprobar el código:
