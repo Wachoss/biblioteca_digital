@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% set editing = book is not none %}
+{% block title %}{{ "Editar" if editing else "Añadir libro" }} · Biblioteca Digital{% endblock %}
+
+{# Un campo con su etiqueta y, si hace falta, el error debajo (Pico lo pinta en rojo). #}
+{% macro field(name, label, type="text", hint=none) %}
+<label>
+  {{ label }}
+  {% if type == "textarea" %}
+  <textarea name="{{ name }}" rows="{{ kwargs.rows or 3 }}" {{ invalid(name, hint) }}>{{ values.get(name, "") }}</textarea>
+  {% else %}
+  <input type="{{ type }}" name="{{ name }}" value="{{ values.get(name, '') }}" {{ invalid(name, hint) }}
+         {%- for attr, val in kwargs.items() %} {{ attr }}="{{ val }}"{% endfor %}>
+  {% endif %}
+  {% if errors[name] %}<small id="{{ name }}-help">{{ errors[name] }}</small>
+  {% elif hint %}<small id="{{ name }}-help">{{ hint }}</small>{% endif %}
+</label>
+{% endmacro %}
+{% macro invalid(name, hint) -%}
+  {% if errors[name] %}aria-invalid="true"{% endif %}
+  {% if errors[name] or hint %}aria-describedby="{{ name }}-help"{% endif %}
+{%- endmacro %}
+
+{% block content %}
+{% if editing %}
+<p><a href="{{ url_for('book_page', book_id=book.id) }}">← Volver a la ficha</a></p>
+<h1>Editar «{{ book.title }}»</h1>
+{% else %}
+<p><a href="{{ url_for('catalog_page') }}">← Volver al catálogo</a></p>
+<h1>Añadir libro</h1>
+
+{#
+  Buscar por ISBN es un GET normal que recarga la página. Con HTMX, solo se sustituye
+  el bloque #formulario-libro (hx-select lo recorta de la página que devuelve el
+  servidor), así que el servidor no necesita una ruta aparte para el trozo.
+#}
+<form action="{{ url_for('new_book_page') }}" method="get"
+      hx-get="{{ url_for('new_book_page') }}" hx-target="#formulario-libro"
+      hx-select="#formulario-libro" hx-swap="outerHTML" hx-indicator="#buscando">
+  <label for="lookup-isbn">Buscar por ISBN en Open Library</label>
+  <fieldset role="group">
+    <input id="lookup-isbn" type="text" name="isbn" value="{{ lookup.isbn if lookup else '' }}"
+           placeholder="978-84-…" autocomplete="off" required
+           {% if lookup_error %}aria-invalid="true" aria-describedby="lookup-help"{% endif %}>
+    <button type="submit">Buscar</button>
+  </fieldset>
+  <small id="lookup-help">
+    {%- if lookup_error %}{{ lookup_error }}{% else %}Está en la contracubierta, encima del código de barras. Si el libro no tiene, rellena el formulario a mano.{% endif -%}
+  </small>
+  <p id="buscando" class="htmx-indicator" aria-busy="true">Buscando en Open Library…</p>
+</form>
+<hr>
+{% endif %}
+
+<div id="formulario-libro">
+  {% if existing %}
+  <p class="notice" role="alert">
+    Ya tienes este libro: <a href="{{ url_for('book_page', book_id=existing.id) }}">{{ existing.title }}</a>.
+  </p>
+  {% elif notice %}
+  <p class="notice" role="status">{{ notice }}</p>
+  {% endif %}
+
+  {% if not (existing and not errors) %}
+  <form method="post" class="book-form"
+        action="{{ url_for('update_book', book_id=book.id) if editing else url_for('create_book') }}">
+    {% if values.get("cover_url") %}
+    {% with url=values.cover_url, title=values.get("title", ""), loading="eager" %}{% include "_cover.html" %}{% endwith %}
+    {% endif %}
+    <div>
+      {{ field("title", "Título", required=true, maxlength=300) }}
+      {{ field("authors", "Autores", type="textarea", hint="Uno por línea.", rows=2) }}
+      <label>
+        Estado
+        <select name="status">
+          {% for status in STATUSES %}
+          <option value="{{ status.value }}" {% if values.get("status", "pendiente") == status.value %}selected{% endif %}>{{ status.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="grid">
+        {{ field("isbn", "ISBN", autocomplete="off") }}
+        {{ field("publish_year", "Año", inputmode="numeric", maxlength=4) }}
+      </div>
+      {{ field("cover_url", "Portada (dirección de la imagen)", type="url", placeholder="https://…") }}
+      {{ field("notes", "Notas", type="textarea", hint="Por ejemplo, a quién se lo has dejado.") }}
+      <input type="hidden" name="openlibrary_key" value="{{ values.get('openlibrary_key', '') }}">
+      <button type="submit">{{ "Guardar cambios" if editing else "Añadir a la biblioteca" }}</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+{% if editing %}
+{#
+  Borrar pide confirmación sin JavaScript: el botón de verdad está dentro de un
+  <details> que hay que abrir primero. Así no se borra un libro de un toque sin querer.
+#}
+<details class="danger-zone">
+  <summary>Borrar este libro</summary>
+  <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}">
+    <p>Se borrará «{{ book.title }}» del catálogo. No se puede deshacer.</p>
+    <button type="submit" class="secondary">Sí, borrarlo</button>
+  </form>
+</details>
+{% endif %}
+{% endblock %}

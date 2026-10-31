@@ -13,6 +13,9 @@
   <header class="container">
     <nav>
       <ul><li><a href="{{ url_for('catalog_page') }}" class="brand">Biblioteca Digital</a></li></ul>
+      {% if is_owner(request) %}
+      <ul class="header-actions"><li><a href="{{ url_for('new_book_page') }}" role="button">Añadir libro</a></li></ul>
+      {% endif %}
     </nav>
   </header>
   <main class="container">

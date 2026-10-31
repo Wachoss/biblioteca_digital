@@ -121,3 +121,56 @@
   max-width: 24rem;
   margin-inline: auto;
 }
+
+/* Formulario de alta y edición: portada a la izquierda si la hay, como en la ficha. */
+.book-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.book-form:has(> .cover) {
+  grid-template-columns: minmax(8rem, 12rem) 1fr;
+}
+
+@media (max-width: 576px) {
+  .book-form:has(> .cover) {
+    grid-template-columns: 1fr;
+  }
+
+  .book-form .cover {
+    max-width: 10rem;
+  }
+}
+
+.notice {
+  padding: 0.75rem 1rem;
+  border-left: 0.25rem solid var(--pico-primary);
+  background: var(--pico-card-background-color);
+}
+
+/* El indicador de HTMX solo se ve mientras hay una petición en marcha. */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: block;
+}
+
+.danger-zone {
+  margin-top: 3rem;
+}
+
+.danger-zone button {
+  width: auto;
+  background: #c62828;
+  border-color: #c62828;
+  color: #fff;
+}
+
+.header-actions a[role="button"] {
+  padding: 0.4rem 0.9rem;
+}
