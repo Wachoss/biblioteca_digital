@@ -9,7 +9,8 @@ aplicación web instalable (PWA).
 ficha de cada libro, búsqueda por título o autor (sin importar tildes ni mayúsculas) y
 filtro por estado de lectura. También hay una API JSON de solo lectura en `/api/books`.
 El dueño inicia sesión en `/entrar` y puede añadir libros por ISBN (los datos llegan de
-Open Library y se revisan antes de guardar) o a mano, editarlos y borrarlos. Se puede
+Open Library y se revisan antes de guardar) o a mano, editarlos y borrarlos. El ISBN
+se puede leer del código de barras con la cámara del móvil o del ordenador. Se puede
 instalar en el móvil y en el ordenador como una app, y sin conexión enseña el catálogo y
 las fichas que ya se hayan abierto antes.
 
@@ -63,6 +64,20 @@ HTTPS y el navegador no registra el service worker. Para probarlo antes de despl
 - **iPhone:** hace falta HTTPS de verdad (desplegada, o con un túnel como
   `tailscale serve` o `cloudflared`). En Safari: Compartir → "Añadir a pantalla de inicio".
 
+## Escanear el ISBN con la cámara
+
+En "Añadir libro", el botón con el código de barras abre la cámara y, al leer el
+código de la contracubierta, busca el libro solo. Igual que el service worker, el vídeo
+de la cámara solo se permite en contexto seguro (HTTPS o `localhost`):
+
+- **Con HTTPS o en `localhost`** (incluido `adb reverse` en Android): vídeo en directo.
+- **En `http://192.168.x.x:8000` desde el móvil:** el botón abre la cámara del sistema
+  para hacer una foto del código, y se lee de la foto. Algo más lento, pero sin HTTPS.
+- **Siempre:** se puede escribir el ISBN a mano.
+
+Para probarlo en el ordenador sin libro, sirve enseñar a la webcam un código de barras
+en la pantalla del móvil (por ejemplo, la foto de una contracubierta).
+
 Los iconos se generan con `uv run --with pillow python scripts/generar_iconos.py`.
 
 ## Estructura
@@ -88,7 +103,7 @@ app/
 │   ├── books.py     # validar el formulario, crear, editar y borrar
 │   └── openlibrary.py  # buscar un libro por ISBN en Open Library
 ├── templates/       # plantillas Jinja2 (las que empiezan por _ son trozos) y sw.js
-├── static/          # CSS, app.js, iconos, HTMX y Pico.css
+├── static/          # CSS, app.js, scanner.js, iconos y librerías (vendor/)
 └── importer/        # importación del Excel antiguo (CLI)
 migrations/          # migraciones de Alembic
 scripts/             # generar_iconos.py: regenera los iconos de la PWA
@@ -126,6 +141,10 @@ las páginas, la API JSON y los tests. La documentación interactiva de la API e
 | Sin conexión solo se ve lo ya visitado: catálogo y fichas | Descargar todo el catálogo al instalar | Con cientos de libros sería mucho tráfico para algo que se usa poco sin red. Los formularios del dueño y `/entrar` nunca se guardan. |
 | Las portadas no pasan por el service worker | Guardarlas también | Vienen de otro dominio sin CORS: se guardarían como respuestas opacas, que cuentan varios MB cada una en la cuota. Sin red se ve el título, el plan B que ya había. |
 | La versión del service worker es una huella de los estáticos y las plantillas | Subir un número a mano en cada cambio | No se puede olvidar: si cambia el CSS o una plantilla, cambia `sw.js` y se descartan las cachés viejas. |
+| Escáner con la API estándar `BarcodeDetector` y, donde no existe, [barcode-detector](https://github.com/Sec-ant/barcode-detector) (ZXing en WebAssembly) | Solo `BarcodeDetector`; html5-qrcode; `@zxing/browser`; QuaggaJS | `BarcodeDetector` solo está en Chrome para Android y macOS: no en iPhone, Firefox ni Chrome de Windows/Linux. barcode-detector imita esa misma API, así que el código es uno solo, y se descarga (≈1 MB) solo si hace falta. html5-qrcode y QuaggaJS llevan años sin mantenerse y `@zxing/browser` está en modo mantenimiento; ZXing-C++ en WebAssembly es más rápido y lee mejor códigos torcidos o borrosos. |
+| Solo EAN-13 que empiecen por 978/979 y con dígito de control correcto | Aceptar cualquier código | Es el formato de los libros; así no se cuela otro código de la contracubierta ni una lectura errónea. |
+| El escáner rellena el campo y envía la misma búsqueda | Una ruta nueva para el escáner | El servidor no cambia: la búsqueda se valida y se revisa igual que si se tecleara. |
+| Foto con `<input capture>` cuando no hay vídeo | Exigir HTTPS para escanear | En casa, por la wifi y sin HTTPS, también se puede escanear; y si se niega el permiso de la cámara sigue habiendo foto y teclado. |
 | `display: standalone` | `minimal-ui` o `browser` | Se abre como una app, sin barra de direcciones; los enlaces "Volver" ya permiten moverse sin el botón Atrás. |
 
 ## Plan

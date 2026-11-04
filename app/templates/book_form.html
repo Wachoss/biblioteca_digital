@@ -34,7 +34,7 @@
   el bloque #formulario-libro (hx-select lo recorta de la página que devuelve el
   servidor), así que el servidor no necesita una ruta aparte para el trozo.
 #}
-<form action="{{ url_for('new_book_page') }}" method="get"
+<form action="{{ url_for('new_book_page') }}" method="get" data-isbn-lookup
       hx-get="{{ url_for('new_book_page') }}" hx-target="#formulario-libro"
       hx-select="#formulario-libro" hx-swap="outerHTML" hx-indicator="#buscando">
   <label for="lookup-isbn">Buscar por ISBN en Open Library</label>
@@ -42,13 +42,41 @@
     <input id="lookup-isbn" type="text" name="isbn" value="{{ lookup.isbn if lookup else '' }}"
            placeholder="978-84-…" autocomplete="off" required
            {% if lookup_error %}aria-invalid="true" aria-describedby="lookup-help"{% endif %}>
+    {# Oculto hasta que scanner.js comprueba que el navegador puede leer códigos. #}
+    <button type="button" class="secondary scan-button" data-scan hidden
+            aria-label="Escanear el código de barras" title="Escanear el código de barras">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+        <path d="M7 8v8M10 8v8M13 8v8M17 8v8"/>
+      </svg>
+    </button>
     <button type="submit">Buscar</button>
   </fieldset>
-  <small id="lookup-help">
-    {%- if lookup_error %}{{ lookup_error }}{% else %}Está en la contracubierta, encima del código de barras. Si el libro no tiene, rellena el formulario a mano.{% endif -%}
+  {# Plan B sin HTTPS: abre la cámara del móvil para hacer una foto (ver scanner.js). #}
+  <input type="file" accept="image/*" capture="environment" data-scan-photo hidden>
+  {% set lookup_hint = "Está en la contracubierta, encima del código de barras. Si el libro no tiene, rellena el formulario a mano." %}
+  <small id="lookup-help" data-default="{{ lookup_hint }}">
+    {%- if lookup_error %}{{ lookup_error }}{% else %}{{ lookup_hint }}{% endif -%}
   </small>
   <p id="buscando" class="htmx-indicator" aria-busy="true">Buscando en Open Library…</p>
 </form>
+
+<dialog id="escaner" aria-labelledby="escaner-titulo">
+  <article>
+    <h2 id="escaner-titulo">Escanear ISBN</h2>
+    <div class="scanner-view">
+      {# playsinline: sin él, iOS abre el vídeo a pantalla completa con sus controles. #}
+      <video muted playsinline></video>
+      <div class="scanner-guide" aria-hidden="true"></div>
+    </div>
+    <p data-scan-message role="status"></p>
+    <footer>
+      <button type="button" class="secondary" data-scan-photo-button>Hacer una foto</button>
+      <button type="button" data-scan-close>Cancelar</button>
+    </footer>
+  </article>
+</dialog>
 <hr>
 {% endif %}
 
@@ -103,5 +131,13 @@
     <button type="submit" class="secondary">Sí, borrarlo</button>
   </form>
 </details>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if not editing %}
+<script src="{{ url_for('static', path='scanner.js') }}" defer
+        data-ponyfill="{{ url_for('static', path='vendor/barcode-detector-3.2.3-ponyfill.js') }}"
+        data-wasm="{{ url_for('static', path='vendor/zxing-reader-3.1.6.wasm') }}"></script>
 {% endif %}
 {% endblock %}
